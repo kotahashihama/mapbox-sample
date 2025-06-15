@@ -1,6 +1,7 @@
 import DeckGL from '@deck.gl/react';
 import StaticMap from 'react-map-gl';
 import { useEffect, useRef, useState } from 'react';
+import { GeoJsonLayer } from '@deck.gl/layers';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -12,24 +13,83 @@ const INITIAL_VIEW_STATE = {
   bearing: -20,
 };
 
+// ダミー屋上ポリゴンGeoJSON（東京タワー周辺に3つ）
+const rooftopsGeojson: GeoJSON.FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.744, 35.658],
+            [139.744, 35.6585],
+            [139.7445, 35.6585],
+            [139.7445, 35.658],
+            [139.744, 35.658],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.743, 35.6582],
+            [139.743, 35.6587],
+            [139.7435, 35.6587],
+            [139.7435, 35.6582],
+            [139.743, 35.6582],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.742, 35.6584],
+            [139.742, 35.6589],
+            [139.7425, 35.6589],
+            [139.7425, 35.6584],
+            [139.742, 35.6584],
+          ],
+        ],
+      },
+    },
+  ],
+};
+
 function App() {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+
+  // 屋上ポリゴンをランダム色で塗るGeoJsonLayer
+  const rooftopLayer = new GeoJsonLayer({
+    id: 'rooftop-demo',
+    data: rooftopsGeojson,
+    getFillColor: () => {
+      // ランダム色（赤or青）
+      return Math.random() > 0.5 ? [255, 0, 0, 180] : [0, 0, 255, 180];
+    },
+    extruded: true,
+    getElevation: 10,
+    pickable: true,
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
       const map = mapRef.current;
       if (!map) return;
-
-      // style.load がすでに終わっているか確認（初回以外用）
       if (map.isStyleLoaded()) {
-        console.log('✅ Map style loaded');
-        const layers = map.getStyle().layers;
-        console.log(
-          '📦 Layers:',
-          layers?.map((l) => l.id)
-        );
-
         if (!map.getLayer('3d-buildings')) {
           map.addLayer({
             id: '3d-buildings',
@@ -45,10 +105,8 @@ function App() {
               'fill-extrusion-opacity': 0.7,
             },
           });
-          console.log('🏗️ 3D buildings layer added');
         }
-
-        clearInterval(interval); // 一度だけ実行
+        clearInterval(interval);
       }
     }, 500);
     return () => clearInterval(interval);
@@ -69,6 +127,7 @@ function App() {
           right: '0',
           bottom: '0',
         }}
+        layers={[rooftopLayer]}
       >
         <StaticMap
           mapboxAccessToken={MAPBOX_TOKEN}
