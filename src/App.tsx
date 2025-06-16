@@ -185,7 +185,7 @@ function App() {
       >
         <StaticMap
           mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/light-v11"
+          mapStyle="mapbox://styles/mapbox/streets-v11"
           ref={(ref) => {
             mapRef.current = ref?.getMap?.() ?? null;
           }}
