@@ -2,6 +2,7 @@ import DeckGL from '@deck.gl/react';
 import StaticMap from 'react-map-gl';
 import { useEffect, useRef, useState } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
+import { MVTLayer } from '@deck.gl/geo-layers';
 import type { FeatureCollection, Polygon } from 'geojson';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -101,6 +102,9 @@ function App() {
     useState<typeof INITIAL_VIEW_STATE>(INITIAL_VIEW_STATE);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [popupInfo, setPopupInfo] = useState<RooftopPopupInfo>(null);
+  // レイヤー表示/非表示用の状態
+  const [showMvt, setShowMvt] = useState(true);
+  const [showRooftop, setShowRooftop] = useState(true);
 
   // 屋上ポリゴンをクリックで吹き出し表示
   const rooftopLayer = new GeoJsonLayer({
@@ -122,6 +126,29 @@ function App() {
         });
       } else {
         setPopupInfo(null);
+      }
+    },
+  });
+
+  // MVTLayerでMapboxのbuildingレイヤー（ポリゴン）を表示
+  const mvtLayer = new MVTLayer({
+    id: 'mvt-buildings',
+    data: `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.vector.pbf?access_token=${MAPBOX_TOKEN}`,
+    // buildingレイヤーのみ抽出
+    minZoom: 14,
+    maxZoom: 20,
+    getLineColor: [0, 0, 0, 80],
+    getFillColor: [0, 200, 255, 120],
+    lineWidthMinPixels: 1,
+    pickable: true,
+    onClick: (info) => {
+      if (info.object && info.coordinate) {
+        setPopupInfo({
+          title: 'MVTビル',
+          image: '',
+          description: JSON.stringify(info.object.properties),
+          coordinates: info.coordinate as [number, number],
+        });
       }
     },
   });
@@ -181,7 +208,10 @@ function App() {
           right: '0',
           bottom: '0',
         }}
-        layers={[rooftopLayer]}
+        layers={[
+          showMvt ? mvtLayer : null,
+          showRooftop ? rooftopLayer : null,
+        ].filter(Boolean)}
       >
         <StaticMap
           mapboxAccessToken={MAPBOX_TOKEN}
@@ -191,6 +221,39 @@ function App() {
           }}
         />
       </DeckGL>
+
+      {/* レイヤー表示切り替えUI */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 10,
+          top: 10,
+          zIndex: 11,
+          background: 'rgba(255,255,255,0.9)',
+          padding: '8px 12px',
+          borderRadius: 8,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          fontSize: 14,
+        }}
+      >
+        <div style={{ marginBottom: 4, fontWeight: 'bold' }}>レイヤー表示</div>
+        <label style={{ display: 'block', marginBottom: 4 }}>
+          <input
+            type="checkbox"
+            checked={showMvt}
+            onChange={(e) => setShowMvt(e.target.checked)}
+          />{' '}
+          MVTビル
+        </label>
+        <label style={{ display: 'block' }}>
+          <input
+            type="checkbox"
+            checked={showRooftop}
+            onChange={(e) => setShowRooftop(e.target.checked)}
+          />{' '}
+          GeoJSONポリゴン
+        </label>
+      </div>
 
       {/* 🎮 コントロールボタン群 */}
       <div
