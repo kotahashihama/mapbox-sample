@@ -2,24 +2,37 @@ import DeckGL from '@deck.gl/react';
 import StaticMap from 'react-map-gl';
 import { useEffect, useRef, useState } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
+import type { FeatureCollection, Polygon } from 'geojson';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const INITIAL_VIEW_STATE = {
-  latitude: 35.607768,
-  longitude: 139.742327,
-  zoom: 16,
+  latitude: 35.658,
+  longitude: 139.744,
+  zoom: 18,
   pitch: 60,
   bearing: -20,
 };
 
-// ダミー屋上ポリゴンGeoJSON（東京タワー周辺に3つ）
-const rooftopsGeojson: GeoJSON.FeatureCollection = {
+// 屋上ポリゴンのプロパティ型
+interface RooftopProperties {
+  title: string;
+  image: string;
+  description: string;
+}
+
+// ダミー屋上ポリゴンGeoJSON（東京タワー周辺に3つ、各ビルに画像・説明付き）
+const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
   type: 'FeatureCollection',
   features: [
     {
       type: 'Feature',
-      properties: {},
+      properties: {
+        title: '東京都 街角緑化支援',
+        image:
+          'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
+        description: '詳細はこちら',
+      },
       geometry: {
         type: 'Polygon',
         coordinates: [
@@ -35,7 +48,12 @@ const rooftopsGeojson: GeoJSON.FeatureCollection = {
     },
     {
       type: 'Feature',
-      properties: {},
+      properties: {
+        title: '港区 屋上緑化プロジェクト',
+        image:
+          'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=200&q=80',
+        description: '緑化の詳細',
+      },
       geometry: {
         type: 'Polygon',
         coordinates: [
@@ -51,7 +69,12 @@ const rooftopsGeojson: GeoJSON.FeatureCollection = {
     },
     {
       type: 'Feature',
-      properties: {},
+      properties: {
+        title: '芝公園 屋上菜園',
+        image:
+          'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80',
+        description: '菜園の詳細',
+      },
       geometry: {
         type: 'Polygon',
         coordinates: [
@@ -68,21 +91,39 @@ const rooftopsGeojson: GeoJSON.FeatureCollection = {
   ],
 };
 
-function App() {
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+// 吹き出しUI用の型
+type RooftopPopupInfo =
+  | (RooftopProperties & { coordinates: [number, number] })
+  | null;
 
-  // 屋上ポリゴンをランダム色で塗るGeoJsonLayer
+function App() {
+  const [viewState, setViewState] =
+    useState<typeof INITIAL_VIEW_STATE>(INITIAL_VIEW_STATE);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [popupInfo, setPopupInfo] = useState<RooftopPopupInfo>(null);
+
+  // 屋上ポリゴンをクリックで吹き出し表示
   const rooftopLayer = new GeoJsonLayer({
     id: 'rooftop-demo',
     data: rooftopsGeojson,
-    getFillColor: () => {
-      // ランダム色（赤or青）
-      return Math.random() > 0.5 ? [255, 0, 0, 180] : [0, 0, 255, 180];
-    },
+    getFillColor: (f) =>
+      f.properties?.title ? [255, 0, 0, 180] : [0, 0, 255, 180],
     extruded: true,
     getElevation: 10,
     pickable: true,
+    onClick: (info) => {
+      // info.object: Feature<Polygon, RooftopProperties> | undefined
+      if (info.object && info.coordinate) {
+        setPopupInfo({
+          title: info.object.properties.title,
+          image: info.object.properties.image,
+          description: info.object.properties.description,
+          coordinates: info.coordinate as [number, number],
+        });
+      } else {
+        setPopupInfo(null);
+      }
+    },
   });
 
   useEffect(() => {
@@ -111,6 +152,19 @@ function App() {
     }, 500);
     return () => clearInterval(interval);
   }, []);
+
+  // 地理座標→画面座標変換
+  function getPopupPosition(coordinate: [number, number] | undefined) {
+    if (!mapRef.current || !coordinate) return { left: 0, top: 0 };
+    const canvas = mapRef.current.getCanvas();
+    const rect = canvas.getBoundingClientRect();
+    // mapbox-glのprojectで地理座標→ピクセル座標
+    const point = mapRef.current.project([coordinate[0], coordinate[1]]);
+    return {
+      left: point.x + rect.left,
+      top: point.y + rect.top - 120, // 少し上にずらす
+    };
+  }
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -193,6 +247,36 @@ function App() {
           ⤓ 角度↓
         </button>
       </div>
+      {/* 吹き出しUI */}
+      {popupInfo && (
+        <div
+          style={{
+            position: 'absolute',
+            left: getPopupPosition(popupInfo.coordinates).left,
+            top: getPopupPosition(popupInfo.coordinates).top,
+            zIndex: 20,
+            background: '#ffe4e1',
+            borderRadius: 8,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            padding: 12,
+            minWidth: 180,
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
+            {popupInfo.title}
+          </div>
+          <img
+            src={popupInfo.image}
+            alt=""
+            style={{ width: 120, borderRadius: 4, marginBottom: 4 }}
+          />
+          <div>{popupInfo.description}</div>
+          <button style={{ marginTop: 8 }} onClick={() => setPopupInfo(null)}>
+            閉じる
+          </button>
+        </div>
+      )}
     </div>
   );
 }
