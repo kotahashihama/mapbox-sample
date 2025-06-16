@@ -146,7 +146,7 @@ function App() {
         setPopupInfo({
           title: 'MVTビル',
           image: '',
-          description: JSON.stringify(info.object.properties),
+          description: info.object.properties,
           coordinates: info.coordinate as [number, number],
         });
       }
@@ -334,7 +334,23 @@ function App() {
             alt=""
             style={{ width: 120, borderRadius: 4, marginBottom: 4 }}
           />
-          <div>{popupInfo.description}</div>
+          {typeof popupInfo.description === 'object' &&
+          popupInfo.description !== null ? (
+            <table style={{ fontSize: 13, marginBottom: 4 }}>
+              <tbody>
+                {Object.entries(popupInfo.description).map(([key, value]) => (
+                  <tr key={key}>
+                    <td style={{ fontWeight: 'bold', paddingRight: 8 }}>
+                      {key}
+                    </td>
+                    <td>{String(value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>{popupInfo.description}</div>
+          )}
           <button style={{ marginTop: 8 }} onClick={() => setPopupInfo(null)}>
             閉じる
           </button>
