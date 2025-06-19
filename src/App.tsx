@@ -235,6 +235,8 @@ function App() {
         if (info.object.id !== undefined) {
           props.id = info.object.id;
         }
+        props.longitude = info.coordinate[0];
+        props.latitude = info.coordinate[1];
         setPopupInfo({
           title: 'MVTビル',
           image: '',
