@@ -28,6 +28,12 @@ interface TreeProperties {
   height: number;
 }
 
+// MVTビルのプロパティ型
+interface MVTBuildingProperties {
+  id: string | number;
+  [key: string]: unknown;
+}
+
 // ダミー屋上ポリゴンGeoJSON（東京タワー周辺に3つ、各ビルに画像・説明付き）
 const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
   type: 'FeatureCollection',
@@ -205,7 +211,7 @@ function App() {
   });
 
   // MVTLayerでMapboxのbuildingレイヤー（ポリゴン）を表示
-  const mvtLayer = new MVTLayer({
+  const mvtLayer = new MVTLayer<MVTBuildingProperties>({
     id: 'mvt-buildings',
     data: `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.vector.pbf?access_token=${MAPBOX_TOKEN}`,
     // buildingレイヤーのみ抽出
@@ -215,12 +221,24 @@ function App() {
     getFillColor: [0, 200, 255, 120],
     lineWidthMinPixels: 1,
     pickable: true,
+    // テキストラベルの設定を追加
+    getText: (f: { properties: MVTBuildingProperties }) =>
+      String(f.properties.id || ''),
+    getTextSize: 14,
+    getTextColor: [0, 0, 0, 255],
+    getTextAnchor: 'middle',
+    getTextAlignmentBaseline: 'center',
     onClick: (info) => {
       if (info.object && info.coordinate) {
+        // idをプロパティ一覧に追加
+        const props = { ...info.object.properties };
+        if (info.object.id !== undefined) {
+          props.id = info.object.id;
+        }
         setPopupInfo({
           title: 'MVTビル',
           image: '',
-          description: info.object.properties,
+          description: props,
           coordinates: info.coordinate as [number, number],
         });
       }
