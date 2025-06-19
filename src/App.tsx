@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { MVTLayer } from '@deck.gl/geo-layers';
 import type { Feature, FeatureCollection, Polygon, Geometry } from 'geojson';
+import {
+  popupStyle,
+  popupTitle,
+  popupImage,
+  popupTable,
+  popupTableKey,
+  popupCloseButton,
+} from './App.css.ts';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -440,36 +448,21 @@ function App() {
       {/* 吹き出しUI */}
       {popupInfo && (
         <div
+          className={popupStyle}
           style={{
-            position: 'absolute',
             left: getPopupPosition(popupInfo.coordinates).left,
             top: getPopupPosition(popupInfo.coordinates).top,
-            zIndex: 20,
-            background: '#ffe4e1',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            padding: 12,
-            minWidth: 180,
-            pointerEvents: 'auto',
           }}
         >
-          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
-            {popupInfo.title}
-          </div>
-          <img
-            src={popupInfo.image}
-            alt=""
-            style={{ width: 120, borderRadius: 4, marginBottom: 4 }}
-          />
+          <div className={popupTitle}>{popupInfo.title}</div>
+          <img src={popupInfo.image} alt="" className={popupImage} />
           {typeof popupInfo.description === 'object' &&
           popupInfo.description !== null ? (
-            <table style={{ fontSize: 13, marginBottom: 4 }}>
+            <table className={popupTable}>
               <tbody>
                 {Object.entries(popupInfo.description).map(([key, value]) => (
                   <tr key={key}>
-                    <td style={{ fontWeight: 'bold', paddingRight: 8 }}>
-                      {key}
-                    </td>
+                    <td className={popupTableKey}>{key}</td>
                     <td>{String(value)}</td>
                   </tr>
                 ))}
@@ -478,7 +471,10 @@ function App() {
           ) : (
             <div>{popupInfo.description}</div>
           )}
-          <button style={{ marginTop: 8 }} onClick={() => setPopupInfo(null)}>
+          <button
+            className={popupCloseButton}
+            onClick={() => setPopupInfo(null)}
+          >
             閉じる
           </button>
         </div>
