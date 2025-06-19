@@ -3,7 +3,7 @@ import StaticMap from 'react-map-gl';
 import { useEffect, useRef, useState } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { MVTLayer } from '@deck.gl/geo-layers';
-import type { FeatureCollection, Polygon } from 'geojson';
+import type { Feature, FeatureCollection, Polygon, Geometry } from 'geojson';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -20,6 +20,12 @@ interface RooftopProperties {
   title: string;
   image: string;
   description: string;
+}
+
+// 木型ポリゴンのプロパティ型
+interface TreeProperties {
+  type: 'tree';
+  height: number;
 }
 
 // ダミー屋上ポリゴンGeoJSON（東京タワー周辺に3つ、各ビルに画像・説明付き）
@@ -92,19 +98,87 @@ const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
   ],
 };
 
-// 吹き出しUI用の型
-type RooftopPopupInfo =
-  | (RooftopProperties & { coordinates: [number, number] })
-  | null;
+// 木型ポリゴンGeoJSON（東京タワー周辺に配置）
+const treesGeojson: FeatureCollection<Polygon, TreeProperties> = {
+  type: 'FeatureCollection',
+  features: [
+    // 木1
+    {
+      type: 'Feature',
+      properties: {
+        type: 'tree',
+        height: 8,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.7454, 35.6586],
+            [139.7455, 35.6586],
+            [139.74545, 35.6587],
+            [139.7454, 35.6586],
+          ],
+        ],
+      },
+    },
+    // 木2
+    {
+      type: 'Feature',
+      properties: {
+        type: 'tree',
+        height: 10,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.7456, 35.6585],
+            [139.7457, 35.6585],
+            [139.74565, 35.6586],
+            [139.7456, 35.6585],
+          ],
+        ],
+      },
+    },
+    // 木3
+    {
+      type: 'Feature',
+      properties: {
+        type: 'tree',
+        height: 6,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [139.7453, 35.6584],
+            [139.7454, 35.6584],
+            [139.74535, 35.6585],
+            [139.7453, 35.6584],
+          ],
+        ],
+      },
+    },
+  ],
+};
+
+// 吹き出しUI用の型（統一版）
+type PopupInfo = {
+  title: string;
+  image: string;
+  description: string | Record<string, unknown>;
+  coordinates: [number, number];
+} | null;
 
 function App() {
   const [viewState, setViewState] =
     useState<typeof INITIAL_VIEW_STATE>(INITIAL_VIEW_STATE);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [popupInfo, setPopupInfo] = useState<RooftopPopupInfo>(null);
+  const [popupInfo, setPopupInfo] = useState<PopupInfo>(null);
   // レイヤー表示/非表示用の状態
   const [showMvt, setShowMvt] = useState(true);
   const [showRooftop, setShowRooftop] = useState(true);
+  const [showTrees, setShowTrees] = useState(true);
 
   // 屋上ポリゴンをクリックで吹き出し表示
   const rooftopLayer = new GeoJsonLayer({
@@ -147,6 +221,30 @@ function App() {
           title: 'MVTビル',
           image: '',
           description: info.object.properties,
+          coordinates: info.coordinate as [number, number],
+        });
+      }
+    },
+  });
+
+  // 木型ポリゴンレイヤー
+  const treesLayer = new GeoJsonLayer<TreeProperties>({
+    id: 'trees',
+    data: treesGeojson,
+    getFillColor: [34, 139, 34, 180], // 森林緑色
+    getLineColor: [0, 100, 0, 255], // 濃い緑色の輪郭
+    lineWidthMinPixels: 1,
+    extruded: true,
+    getElevation: (d: Feature<Geometry, TreeProperties>) => d.properties.height,
+    elevationScale: true,
+    pickable: true,
+    onClick: (info) => {
+      if (info.object && info.coordinate) {
+        setPopupInfo({
+          title: '木',
+          image:
+            'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=200&q=80',
+          description: `樹高: ${info.object.properties.height}m`,
           coordinates: info.coordinate as [number, number],
         });
       }
@@ -211,6 +309,7 @@ function App() {
         layers={[
           showMvt ? mvtLayer : null,
           showRooftop ? rooftopLayer : null,
+          showTrees ? treesLayer : null,
         ].filter(Boolean)}
       >
         <StaticMap
@@ -243,15 +342,23 @@ function App() {
             checked={showMvt}
             onChange={(e) => setShowMvt(e.target.checked)}
           />{' '}
-          MVTビル
+          VectorTileビル
         </label>
-        <label style={{ display: 'block' }}>
+        <label style={{ display: 'block', marginBottom: 4 }}>
           <input
             type="checkbox"
             checked={showRooftop}
             onChange={(e) => setShowRooftop(e.target.checked)}
           />{' '}
-          GeoJSONポリゴン
+          GeoJSONビル
+        </label>
+        <label style={{ display: 'block' }}>
+          <input
+            type="checkbox"
+            checked={showTrees}
+            onChange={(e) => setShowTrees(e.target.checked)}
+          />{' '}
+          GeoJSON木
         </label>
       </div>
 
