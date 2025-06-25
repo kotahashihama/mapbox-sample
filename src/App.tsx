@@ -185,7 +185,7 @@ function App() {
     },
   });
 
-  // tree.glbを東京タワー付近に1本だけ表示
+  // tree.glbをMITAGARDENHILLS屋上付近に1本だけ表示
   const treeModelLayer = new ScenegraphLayer({
     id: 'tree-glb-single',
     data: [{ position: [139.7450223163875, 35.65895642091729, 6] }],
@@ -195,6 +195,16 @@ function App() {
     sizeScale: 5,
     _lighting: 'pbr',
     pickable: true,
+    onClick: (info) => {
+      if (info.object && info.coordinate) {
+        setPopupInfo({
+          title: 'MITAGARDENHILLSの木',
+          image: '', // 必要なら画像URLを指定
+          description: 'これはサンプルの木です。',
+          coordinates: info.coordinate as [number, number],
+        });
+      }
+    },
   });
 
   useEffect(() => {
