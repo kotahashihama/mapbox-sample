@@ -21,7 +21,7 @@ export function createBuildingLayer(
     getTextAnchor: 'middle',
     getTextAlignmentBaseline: 'center',
     onClick: (info) => {
-      if (info.object && info.coordinate) {
+      if (info.object && info.coordinate && info.coordinate.length >= 2) {
         const props = { ...info.object.properties };
         if (info.object.id !== undefined) {
           props.id = info.object.id;
@@ -32,7 +32,7 @@ export function createBuildingLayer(
           title: 'MVTビル',
           image: '',
           description: props,
-          coordinates: info.coordinate as [number, number],
+          coordinates: [info.coordinate[0], info.coordinate[1]],
         });
       }
     },

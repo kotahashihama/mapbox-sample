@@ -14,12 +14,12 @@ export function createTreeLayer(
     _lighting: 'pbr',
     pickable: true,
     onClick: (info) => {
-      if (info.object && info.coordinate) {
+      if (info.object && info.coordinate && info.coordinate.length >= 2) {
         setPopupInfo({
           title: 'MITAGARDENHILLSの木',
           image: '',
           description: 'これはサンプルの木です。',
-          coordinates: info.coordinate as [number, number],
+          coordinates: [info.coordinate[0], info.coordinate[1]],
         });
       }
     },

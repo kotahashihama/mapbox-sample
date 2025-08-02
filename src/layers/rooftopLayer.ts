@@ -14,12 +14,12 @@ export function createRooftopLayer(
     getElevation: 10,
     pickable: true,
     onClick: (info) => {
-      if (info.object && info.coordinate) {
+      if (info.object && info.coordinate && info.coordinate.length >= 2) {
         setPopupInfo({
           title: info.object.properties.title,
           image: info.object.properties.image,
           description: info.object.properties.description,
-          coordinates: info.coordinate as [number, number],
+          coordinates: [info.coordinate[0], info.coordinate[1]],
         });
       } else {
         setPopupInfo(null);

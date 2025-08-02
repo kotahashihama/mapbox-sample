@@ -15,3 +15,11 @@ export type PopupInfo = {
   description: string | Record<string, unknown>;
   coordinates: [number, number];
 } | null;
+
+export interface ViewState {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+}

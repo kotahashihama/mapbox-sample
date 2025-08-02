@@ -1,7 +1,9 @@
 import DeckGL from '@deck.gl/react';
 import StaticMap from 'react-map-gl';
+import type { MapRef } from 'react-map-gl';
 import { useEffect, useRef, useState } from 'react';
-import type { PopupInfo } from './types';
+import type { ViewStateChangeParameters } from '@deck.gl/core';
+import type { PopupInfo, ViewState } from './types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE } from './constants';
 import { createRooftopLayer } from './layers/rooftopLayer';
 import { createBuildingLayer } from './layers/buildingLayer';
@@ -11,8 +13,8 @@ import { Controls } from './components/Controls/Controls';
 import { LayerToggle } from './components/LayerToggle/LayerToggle';
 
 function App() {
-  const [viewState, setViewState] = useState<typeof INITIAL_VIEW_STATE>(INITIAL_VIEW_STATE);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
+  const mapRef = useRef<MapRef | null>(null);
   const [popupInfo, setPopupInfo] = useState<PopupInfo>(null);
   const [showMvt, setShowMvt] = useState(true);
   const [showRooftop, setShowRooftop] = useState(true);
@@ -25,7 +27,7 @@ function App() {
   // Mapbox 3Dビルディングレイヤーを追加
   useEffect(() => {
     const interval = setInterval(() => {
-      const map = mapRef.current;
+      const map = mapRef.current?.getMap();
       if (!map) return;
       if (map.isStyleLoaded()) {
         if (!map.getLayer('3d-buildings')) {
@@ -52,24 +54,41 @@ function App() {
 
   // 地理座標→画面座標変換
   function getPopupPosition(coordinate: [number, number] | undefined) {
-    if (!mapRef.current || !coordinate) return { left: 0, top: 0 };
-    const canvas = mapRef.current.getCanvas();
+    const map = mapRef.current?.getMap();
+    if (!map || !coordinate) return { left: 0, top: 0 };
+    const canvas = map.getCanvas();
     const rect = canvas.getBoundingClientRect();
-    const point = mapRef.current.project([coordinate[0], coordinate[1]]);
+    const point = map.project([coordinate[0], coordinate[1]]);
     return {
       left: point.x + rect.left,
       top: point.y + rect.top - 120,
     };
   }
 
+  // DeckGLのonViewStateChangeハンドラ
+  const handleViewStateChange = ({ viewState }: ViewStateChangeParameters) => {
+    // MapViewStateまたはTransitionPropsから必要なプロパティを取得
+    if ('latitude' in viewState && 
+        'longitude' in viewState && 
+        'zoom' in viewState && 
+        'pitch' in viewState && 
+        'bearing' in viewState) {
+      setViewState({
+        latitude: viewState.latitude,
+        longitude: viewState.longitude,
+        zoom: viewState.zoom,
+        pitch: viewState.pitch,
+        bearing: viewState.bearing,
+      });
+    }
+  };
+
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
       <DeckGL
         initialViewState={viewState}
         controller={true}
-        onViewStateChange={({ viewState }) =>
-          setViewState(viewState as typeof INITIAL_VIEW_STATE)
-        }
+        onViewStateChange={handleViewStateChange}
         style={{
           position: 'absolute',
           top: '0',
@@ -84,11 +103,9 @@ function App() {
         ].filter(Boolean)}
       >
         <StaticMap
+          ref={mapRef}
           mapboxAccessToken={MAPBOX_TOKEN}
           mapStyle="mapbox://styles/mapbox/streets-v11"
-          ref={(ref) => {
-            mapRef.current = ref?.getMap?.() ?? null;
-          }}
         />
       </DeckGL>
 

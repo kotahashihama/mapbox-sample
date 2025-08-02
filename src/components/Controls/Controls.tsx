@@ -1,19 +1,9 @@
+import type { ViewState } from '../../types';
+
 interface ControlsProps {
-  viewState: {
-    latitude: number;
-    longitude: number;
-    zoom: number;
-    pitch: number;
-    bearing: number;
-  };
-  setViewState: React.Dispatch<React.SetStateAction<any>>;
-  initialViewState: {
-    latitude: number;
-    longitude: number;
-    zoom: number;
-    pitch: number;
-    bearing: number;
-  };
+  viewState: ViewState;
+  setViewState: React.Dispatch<React.SetStateAction<ViewState>>;
+  initialViewState: ViewState;
 }
 
 export function Controls({ setViewState, initialViewState }: ControlsProps) {
@@ -33,40 +23,40 @@ export function Controls({ setViewState, initialViewState }: ControlsProps) {
       }}
     >
       <button
-        onClick={() => setViewState((v: any) => ({ ...v, zoom: v.zoom + 1 }))}
+        onClick={() => setViewState((v) => ({ ...v, zoom: v.zoom + 1 }))}
       >
         ＋
       </button>
       <button
-        onClick={() => setViewState((v: any) => ({ ...v, zoom: v.zoom - 1 }))}
+        onClick={() => setViewState((v) => ({ ...v, zoom: v.zoom - 1 }))}
       >
         －
       </button>
       <button onClick={() => setViewState(initialViewState)}>⟳</button>
       <button
         onClick={() =>
-          setViewState((v: any) => ({ ...v, bearing: v.bearing - 10 }))
+          setViewState((v) => ({ ...v, bearing: v.bearing - 10 }))
         }
       >
         ⟲ 左回転
       </button>
       <button
         onClick={() =>
-          setViewState((v: any) => ({ ...v, bearing: v.bearing + 10 }))
+          setViewState((v) => ({ ...v, bearing: v.bearing + 10 }))
         }
       >
         右回転 ⟳
       </button>
       <button
         onClick={() =>
-          setViewState((v: any) => ({ ...v, pitch: Math.max(0, v.pitch - 10) }))
+          setViewState((v) => ({ ...v, pitch: Math.max(0, v.pitch - 10) }))
         }
       >
         ⤒ 角度↑
       </button>
       <button
         onClick={() =>
-          setViewState((v: any) => ({ ...v, pitch: Math.min(85, v.pitch + 10) }))
+          setViewState((v) => ({ ...v, pitch: Math.min(85, v.pitch + 10) }))
         }
       >
         ⤓ 角度↓
