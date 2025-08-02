@@ -1,11 +1,19 @@
 import type { ViewState } from '../../types';
 import * as style from './Controls.css';
 
+/**
+ * Controls コンポーネントの props
+ */
 interface ControlsProps {
   setViewState: React.Dispatch<React.SetStateAction<ViewState>>;
   initialViewState: ViewState;
 }
 
+/**
+ * 地図の表示コントロールボタン
+ * 
+ * ズーム、回転、傾きの調整が可能
+ */
 export function Controls({ setViewState, initialViewState }: ControlsProps) {
   return (
     <div className={style.controlsContainer}>

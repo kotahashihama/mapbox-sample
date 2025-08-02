@@ -5,27 +5,39 @@ import { useEffect, useRef, useState } from 'react';
 import type { ViewStateChangeParameters } from '@deck.gl/core';
 import type { PopupInfo, ViewState } from './types';
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE } from './constants';
-import { createRooftopLayer } from './layers/rooftopLayer';
-import { createBuildingLayer } from './layers/buildingLayer';
+import { createGeoJsonBuildingLayer } from './layers/geoJsonBuildingLayer';
+import { createMvtBuildingLayer } from './layers/mvtBuildingLayer';
 import { createTreeLayer } from './layers/treeLayer';
 import { Popup } from './components/Popup/Popup';
 import { Controls } from './components/Controls/Controls';
 import { LayerToggle } from './components/LayerToggle/LayerToggle';
 import * as style from './App.css';
 
+/**
+ * メインアプリケーションコンポーネント
+ * 
+ * Mapbox と Deck.gl を組み合わせた 3D 地図表示を管理
+ * GeoJSON、MVT、.glb 形式のデータ表示を検証
+ */
 function App() {
+  // Mapbox と Deck.gl を組み合わせた 3D 地図の表示状態を管理
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
   const mapRef = useRef<MapRef | null>(null);
+  // 建物クリック時のポップアップ情報を管理（Feature ID による建物データの紐付けを実現）
   const [popupInfo, setPopupInfo] = useState<PopupInfo>(null);
-  const [showMvt, setShowMvt] = useState(true);
-  const [showRooftop, setShowRooftop] = useState(true);
+  // 建物データの表示切り替え（配信形式の比較検証用）
+  const [showMvt, setShowMvt] = useState(true);     // MVT形式（差分読み込み）
+  const [showGeoJson, setShowGeoJson] = useState(true);  // GeoJSON形式（一括読み込み）
 
-  // レイヤーを作成
-  const rooftopLayer = createRooftopLayer(setPopupInfo);
-  const mvtLayer = createBuildingLayer(setPopupInfo);
+  // 各種レイヤーを作成（建物データの配信形式比較）
+  const geoJsonBuildingLayer = createGeoJsonBuildingLayer(setPopupInfo);  // GeoJSON形式：小規模データ向け
+  const mvtBuildingLayer = createMvtBuildingLayer(setPopupInfo);      // MVT形式：大規模データ向け
+  // ScenegraphLayer: Blender で作成した .glb 形式の 3D モデル（樹木）の配置
   const treeModelLayer = createTreeLayer(setPopupInfo);
 
-  // Mapbox 3Dビルディングレイヤーを追加
+  // Mapbox 3D ビルディングレイヤーを追加
+  // Mapbox Standard の建物ベクタータイルを利用して 3D 建物を表示
+  // これにより Feature ID を通じた建物データの紐付けが可能になる
   useEffect(() => {
     const interval = setInterval(() => {
       const map = mapRef.current?.getMap();
@@ -41,8 +53,10 @@ function App() {
             minzoom: 15,
             paint: {
               'fill-extrusion-color': '#aaa',
+              // 建物の高さ情報を Feature のプロパティから取得
               'fill-extrusion-height': ['get', 'height'],
               'fill-extrusion-base': ['get', 'min_height'],
+              // 半透明にして Deck.gl のレイヤーと重ね合わせ可能に
               'fill-extrusion-opacity': 0.7,
             },
           });
@@ -53,7 +67,12 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 地理座標→画面座標変換
+  /**
+   * 地理座標→画面座標変換
+   * 
+   * クリックした建物の座標をポップアップ表示位置に変換
+   * Feature ID で特定した建物の緯度経度を画面上の位置に変換する
+   */
   function getPopupPosition(coordinate: [number, number] | undefined) {
     const map = mapRef.current?.getMap();
     if (!map || !coordinate) return { left: 0, top: 0 };
@@ -66,9 +85,9 @@ function App() {
     };
   }
 
-  // DeckGLのonViewStateChangeハンドラ
+  // DeckGL の onViewStateChange ハンドラ
+  // 地図の表示状態（ズーム、回転、傾き）を管理
   const handleViewStateChange = ({ viewState }: ViewStateChangeParameters) => {
-    // MapViewStateまたはTransitionPropsから必要なプロパティを取得
     if ('latitude' in viewState && 
         'longitude' in viewState && 
         'zoom' in viewState && 
@@ -98,14 +117,19 @@ function App() {
           bottom: '0',
         }}
         layers={[
-          showMvt ? mvtLayer : null,
-          showRooftop ? rooftopLayer : null,
+          // 建物データ（MVT形式：タイル単位の差分読み込み）
+          showMvt ? mvtBuildingLayer : null,
+          // 建物データ（GeoJSON形式：ファイル全体の一括読み込み）
+          showGeoJson ? geoJsonBuildingLayer : null,
+          // ScenegraphLayer: .glb 形式の 3D 樹木モデル
           treeModelLayer,
         ].filter(Boolean)}
       >
         <StaticMap
           ref={mapRef}
           mapboxAccessToken={MAPBOX_TOKEN}
+          // Mapbox Standard スタイル（日照シミュレーションの 4 プリセット対応）
+          // dawn, day, dusk, night のライティング切り替えが可能
           mapStyle="mapbox://styles/mapbox/streets-v11"
         />
       </DeckGL>
@@ -113,8 +137,8 @@ function App() {
       <LayerToggle
         showMvt={showMvt}
         setShowMvt={setShowMvt}
-        showRooftop={showRooftop}
-        setShowRooftop={setShowRooftop}
+        showGeoJson={showGeoJson}
+        setShowGeoJson={setShowGeoJson}
       />
 
       <Controls

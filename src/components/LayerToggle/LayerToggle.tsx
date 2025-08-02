@@ -1,17 +1,25 @@
 import * as style from './LayerToggle.css';
 
+/**
+ * LayerToggle コンポーネントの props
+ */
 interface LayerToggleProps {
   showMvt: boolean;
   setShowMvt: (show: boolean) => void;
-  showRooftop: boolean;
-  setShowRooftop: (show: boolean) => void;
+  showGeoJson: boolean;
+  setShowGeoJson: (show: boolean) => void;
 }
 
+/**
+ * レイヤーの表示/非表示を切り替えるトグル
+ * 
+ * 建物データの配信形式（MVT vs GeoJSON）の比較検証用
+ */
 export function LayerToggle({
   showMvt,
   setShowMvt,
-  showRooftop,
-  setShowRooftop,
+  showGeoJson,
+  setShowGeoJson,
 }: LayerToggleProps) {
   return (
     <div className={style.toggleContainer}>
@@ -23,16 +31,16 @@ export function LayerToggle({
           checked={showMvt}
           onChange={(e) => setShowMvt(e.target.checked)}
         />
-        VectorTileビル
+建物 (MVT形式)
       </label>
       <label className={style.toggleLabel}>
         <input
           className={style.toggleCheckbox}
           type="checkbox"
-          checked={showRooftop}
-          onChange={(e) => setShowRooftop(e.target.checked)}
+          checked={showGeoJson}
+          onChange={(e) => setShowGeoJson(e.target.checked)}
         />
-        GeoJSONビル
+        建物 (GeoJSON形式)
       </label>
     </div>
   );

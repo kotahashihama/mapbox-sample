@@ -1,21 +1,31 @@
 import type { FeatureCollection, Polygon } from 'geojson';
 
-interface RooftopProperties {
+/**
+ * GeoJSON 建物データのプロパティ
+ */
+interface GeoJsonBuildingProperties {
   title: string;
   image: string;
   description: string;
 }
 
-export const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
+/**
+ * 建物のサンプルデータ (GeoJSON 形式)
+ * 
+ * ファイル全体を一度に読み込むため、小規模データ（数百件程度）に適している
+ * MVT 形式との比較検証用に使用
+ */
+export const buildingsGeojson: FeatureCollection<Polygon, GeoJsonBuildingProperties> = {
   type: 'FeatureCollection',
   features: [
     {
       type: 'Feature',
       properties: {
-        title: '東京都 街角緑化支援',
+        title: '建物A',
         image:
           'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
-        description: '詳細はこちら',
+        // 将来的には緑化ポテンシャル情報を含む
+        description: '東京タワー近辺の建物',
       },
       geometry: {
         type: 'Polygon',
@@ -33,10 +43,10 @@ export const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
     {
       type: 'Feature',
       properties: {
-        title: '港区 屋上緑化プロジェクト',
+        title: '建物B',
         image:
           'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=200&q=80',
-        description: '緑化の詳細',
+        description: '東京タワー近辺の建物',
       },
       geometry: {
         type: 'Polygon',
@@ -54,10 +64,10 @@ export const rooftopsGeojson: FeatureCollection<Polygon, RooftopProperties> = {
     {
       type: 'Feature',
       properties: {
-        title: '芝公園 屋上菜園',
+        title: '建物C',
         image:
           'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80',
-        description: '菜園の詳細',
+        description: '東京タワー近辺の建物',
       },
       geometry: {
         type: 'Polygon',
