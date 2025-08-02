@@ -6,13 +6,27 @@ http://localhost:5173/
 
 ## 環境構築
 
-パッケージのインストール
+### 環境変数のセット
+
+https://console.mapbox.com/account/access-tokens/ でアクセストークンを取得する。
+
+```sh
+cp .env.example .env
+```
+
+して、 `.env` の `VITE_MAPBOX_TOKEN` にアクセストークンをセットする。
+
+```sh
+VITE_MAPBOX_TOKEN=hogefuga
+```
+
+### パッケージのインストール
 
 ```sh
 pnpm i
 ```
 
-起動
+### 起動
 
 ```sh
 pnpm dev
