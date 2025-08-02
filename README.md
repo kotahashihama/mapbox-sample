@@ -5,15 +5,13 @@
 ## 技術スタック
 
 ### フロントエンド
-- **React + TypeScript** - コンポーネント志向による保守性の高い開発
-- **Vite** - 高速な開発サーバーと HMR (Hot Module Replacement)
+- **React + TypeScript** - コンポーネント指向と型システムでの開発
 - **Mapbox GL JS** - ベースマップの表示とベクタータイル処理
-- **react-map-gl** - Mapbox GL JS の React ラッパー
 - **Deck.gl** - WebGL ベースの高性能データ可視化レイヤー
 
 ### データ形式
-- **GeoJSON** - 地理空間データの交換形式
-- **Protocol Buffers (.pbf)** - ベクタータイルのバイナリ形式
+- **GeoJSON** - 一般的な地理空間データの交換形式
+- **Protocol Buffers ( `.pbf` )** - ベクタータイルのバイナリ形式
 - **GLB** - 3D モデル形式（glTF 2.0 バイナリ）
 
 ## 環境構築
@@ -51,7 +49,7 @@ pnpm dev
 
 ![アプリケーション全体像](./images/app-overview.png)
 
-本プロトタイプは、Mapbox と Deck.gl を組み合わせて都市緑化ポテンシャルの可視化システムを検証するために開発した。東京タワー近辺を対象エリアとして、建物データの配信形式の比較や、すでに緑化されているエリアへの 3D 樹木モデルの配置方法を検証している。
+本プロトタイプは、Mapbox と Deck.gl を組み合わせて都市緑化ポテンシャルの可視化システムを検証するために作成した。東京タワー近辺を対象エリアとして、建物データの配信形式の比較や、すでに緑化されているエリアへの 3D 樹木モデルの配置方法を検証している。
 
 ### 主な機能
 
@@ -62,7 +60,7 @@ pnpm dev
 | ![地図操作パネル](./images/map-controls-panel.png)  | ![レイヤー切り替えパネル](./images/layer-toggle-panel.png) |
 | ズームイン/アウト、地図の回転、傾き角度の調整が可能 |       MVT 形式と GeoJSON 形式の表示/非表示を切り替え       |
 
-地図の視点操作を直感的に行うためのパネルと、建物データの配信形式を比較検証するためのレイヤー切り替えパネルを実装。タッチデバイスやマウス操作に加えて、ボタン操作による精密な制御を提供している。
+地図の視点操作を直感的に行うためのパネルと、建物データの配信形式を比較検証するためのレイヤー切り替えパネルを実装。マウス操作に加えて、ボタン操作による精密な制御を提供する。
 
 #### Feature ID による建物データの表示
 
@@ -89,12 +87,12 @@ pnpm dev
 
 大規模なデータを扱う際のパフォーマンス向上のため、以下の手法を調査した。
 
-| 通常版                        | 差分読み込み版            | 用途                   | 特徴                                         |
-| ----------------------------- | ------------------------- | ---------------------- | -------------------------------------------- |
-| `.geojson` ( `GeoJSONLayer` ) | `.pbf` ( `MVTLayer` )     | 簡易的なポリゴンの配置 | ズームレベルに応じたタイル単位の動的読み込み |
-| `.glb` ( `ScenegraphLayer` )  | `.b3dm` ( `Tile3DLayer` ) | 複雑な 3D モデルの配置 | 3D モデルの LOD (Level of Detail) 制御       |
+| 通常版                        | 差分読み込み版            | 用途                   |
+| ----------------------------- | ------------------------- | ---------------------- |
+| `.geojson` ( `GeoJSONLayer` ) | `.pbf` ( `MVTLayer` )     | 簡易的なポリゴンの配置 |
+| `.glb` ( `ScenegraphLayer` )  | `.b3dm` ( `Tile3DLayer` ) | 複雑な 3D モデルの配置 |
 
-品川区や東京都全体への拡張を見据え、 `.b3dm` 形式による 3D タイル化が有効であると考えられる。また、MVT 形式への変換には `tippecanoe` などのタイルビルダーが利用可能である。本実装に落とし込む際には実際の差分読み込みの実装が必要となる。
+品川区や東京都全体への拡張を見据え、 `.pbf` `.b3dm` 形式による 3D タイル化が有効であると考えられる。本実装に落とし込む際には実際の差分読み込みの実装が必要となる。MVT 形式への変換には `tippecanoe` などのタイルビルダーが利用可能である。
 
 ### 建物データとの連携
 
@@ -102,7 +100,7 @@ Mapbox の建物ベクタータイルが持つ Feature ID を活用し、クリ�
 
 ### 日照シミュレーションの制限
 
-Mapbox Standard のライティング機能では `dawn` 、`day` 、`dusk` 、`night` の 4 つのプリセットのみが利用可能で、時間帯や季節による詳細な影の変化を表現するには制限があることが判明した。より高度な日照シミュレーションが必要な場合は、他のライブラリとの併用を検討する必要がある。
+Mapbox Standard のライティング機能では `dawn` 、`day` 、`dusk` 、`night` の 4 つのプリセットのみが利用可能で、時間帯や季節による詳細な影の変化を表現するには制限があることが判明した。より高度な日照シミュレーションが必要な場合は、Cesium 等他のライブラリとの併用を検討する必要がある。
 
 ### コストとスケーラビリティ
 
@@ -110,58 +108,11 @@ Mapbox は月あたり5万ロードまで無料で利用可能。小規模な検
 
 ### データ変換のパフォーマンス
 
-PLATEAU の CityGML から GeoJSON への変換に `ogr2ogr` を使用した際、約 24 分を要した。大規模データの変換処理には Lambda やバッチ処理の工夫が必要である。
+PLATEAU の CityGML から GeoJSON への変換に `ogr2ogr` を使用した際、約24分を要した。大規模データの変換処理には Lambda やバッチ処理の工夫が必要である。
 
 ## 今後の拡張構想
 
 ### アーキテクチャ
-
-データのフローチャート：
-
-```mermaid
-flowchart TD
-  subgraph DataLayer["衛星データ提供元"]
-    A[GeoTIFF / CSV / API]
-  end
-
-  subgraph Ingestion["データ取得 & 変換"]
-    direction TB
-    B[Lambda<br/>定期実行]
-    C[DL: requests/curl]
-    D[変換: rasterio + rasterstats]
-    E[エラーハンドリング & ログ]
-  end
-
-  subgraph Storage["ストレージ & 配信"]
-    direction TB
-    F[S3 バケット<br/>geojson/*.json]
-    G[CloudFront CDN]
-    H[Cache-Control 設定]
-  end
-
-  subgraph Frontend["WebGIS アプリ"]
-    direction TB
-    I[React + react-map-gl]
-    J[DeckGL<br/>GeoJsonLayer]
-    K[ユーザー閲覧]
-  end
-
-  A -->|定期取得| C
-  B --> C
-  C --> D
-  D --> E
-  E --> F
-  F --> G
-  G --> H
-  H --> I
-  I --> J
-  J --> K
-
-  classDef layer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px;
-  class DataLayer,Ingestion,Storage,Frontend layer;
-```
-
-アーキテクチャ図：
 
 ```mermaid
 architecture-beta
@@ -190,16 +141,47 @@ architecture-beta
 
 ### データパイプライン
 
-上記の Mermaid 図で示したアーキテクチャは、以下の3層構造で構成される：
+```mermaid
+flowchart TD
+    A[GeoTIFF / CSV / API]
+
+  subgraph Ingestion["データ取得 & 変換"]
+    direction TB
+    B[Lambda]
+  end
+
+  subgraph Storage["ストレージ & 配信"]
+    direction TB
+    F[S3 バケット<br/>geojson/*.json]
+    G[CloudFront CDN]
+  end
+
+  subgraph Frontend["WebGIS アプリ"]
+    direction TB
+    I[React + react-map-gl]
+    J[DeckGL<br/>GeoJsonLayer]
+    K[描画]
+  end
+
+  A -->|定期取得| B
+  B --> F
+  F --> G
+  G --> I
+  I --> J
+  J --> K
+
+  classDef layer fill:#aaa,stroke:#1976d2,stroke-width:2px;
+  class DataLayer,Ingestion,Storage,Frontend layer;
+```
+
+上記のデータパイプラインは、以下の3層構造で構成される：
 
 1. **データ取得・変換層**
-   - Lambda を用いて衛星データを定期的に取得し、Python ライブラリ（ `rasterio` 、`rasterstats` ）で画像処理を行う
-   - 処理済みの GeoJSON データは `tippecanoe` を使用して PBF 形式のベクタータイルに変換する
+   - Lambda を用いて衛星データを定期的に取得し、Python ライブラリ（ `rasterio` 、`rasterstats` ）で画像処理
+   - 処理済みの GeoJSON データは `tippecanoe` を使用して PBF 形式のベクタータイルに変換
 
 2. **タイルサーバー層**  
-   - 生成されたタイルデータは S3 バケットに保存し、CloudFront CDN 経由で配信することで高速化を実現
-   - 適切な `Cache-Control` ヘッダーを設定し、効率的なキャッシングを行う
+   - 生成されたタイルデータは S3 バケットに保存し、CloudFront CDN 経由で配信
 
 3. **アプリケーション層**
-   - React と Deck.gl を組み合わせた WebGIS アプリケーションとして、エンドユーザーに高性能な地図表示を提供
-   - 将来的にはリアルタイムでのデータ更新機能も実装可能
+   - Mapbox と Deck.gl を組み合わせて描画
