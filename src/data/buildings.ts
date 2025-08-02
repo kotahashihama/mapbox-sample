@@ -24,7 +24,7 @@ export const buildingsGeojson: FeatureCollection<Polygon, GeoJsonBuildingPropert
         title: '建物A',
         image:
           'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80',
-        // 将来的には緑化ポテンシャル情報を含む
+        // 本実装では都市緑化ポテンシャル情報を含むことを想定
         description: '東京タワー近辺の建物',
       },
       geometry: {

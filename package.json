@@ -1,5 +1,6 @@
 {
   "name": "mapbox-sample",
+  "description": "都市緑化ポテンシャルマップの検証プロトタイプ - Mapbox と Deck.gl を使用した 3D 可視化システム",
   "private": true,
   "version": "0.0.0",
   "type": "module",

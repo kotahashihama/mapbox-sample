@@ -31,7 +31,7 @@ export function LayerToggle({
           checked={showMvt}
           onChange={(e) => setShowMvt(e.target.checked)}
         />
-建物 (MVT形式)
+建物 (MVT 形式)
       </label>
       <label className={style.toggleLabel}>
         <input
@@ -40,7 +40,7 @@ export function LayerToggle({
           checked={showGeoJson}
           onChange={(e) => setShowGeoJson(e.target.checked)}
         />
-        建物 (GeoJSON形式)
+        建物 (GeoJSON 形式)
       </label>
     </div>
   );

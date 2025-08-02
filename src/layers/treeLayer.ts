@@ -2,8 +2,9 @@ import { ScenegraphLayer } from '@deck.gl/mesh-layers';
 import type { PopupInfo } from '../types';
 
 /**
- * ScenegraphLayer を使用した 3D 樹木モデルの配置
+ * 既存緑化エリアの 3D 樹木モデル配置
  * 
+ * すでに緑化されているエリアを表現するための 3D モデル
  * Blender の Python スクリプティングで作成した .glb ファイルを使用
  * 大規模展開時には .b3dm (Tile3DLayer) への移行を検討
  */
@@ -12,12 +13,12 @@ export function createTreeLayer(
 ) {
   return new ScenegraphLayer({
     id: 'tree-model-layer',
-    // 東京タワー近辺の建物にテスト配置
+    // 東京タワー近辺の既存緑化エリアに配置
     data: [{ position: [139.7450223163875, 35.65895642091729, 6] }],
     // Blender で作成した円錐（幹）と球体（葉）を組み合わせた樹木モデル
     scenegraph: '/tree.glb',
     getPosition: (d: { position: [number, number, number] }) => d.position,
-    // 3D モデルの回転角度（Z軸を 90 度回転）
+    // 3D モデルの回転角度（Z 軸を 90 度回転）
     getOrientation: () => [0, 0, 90],
     // モデルの表示サイズを調整
     sizeScale: 5,
@@ -26,10 +27,10 @@ export function createTreeLayer(
     pickable: true,
     onClick: (info) => {
       if (info.object && info.coordinate && info.coordinate.length >= 2) {
-        // 植樹済みエリアの情報を表示
-        // 将来的には植物の種類、成長状態、CO2吸収量などを表示
+        // 既存緑化エリアの情報を表示
+        // 本実装では植物の種類、成長状態、CO2 吸収量などを表示することを想定
         setPopupInfo({
-          title: 'MITAGARDENHILLSの木',
+          title: '既存緑化エリア',
           image: '',
           description: 'これはサンプルの木です。',
           coordinates: [info.coordinate[0], info.coordinate[1]],

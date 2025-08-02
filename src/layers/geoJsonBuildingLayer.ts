@@ -24,9 +24,9 @@ export function createGeoJsonBuildingLayer(
     onClick: (info) => {
       if (info.object && info.coordinate && info.coordinate.length >= 2) {
         // GeoJSON 形式の建物データ情報をポップアップに表示
-        // MVT と同様に将来的には緑化ポテンシャル情報を表示
+        // 本実装では MVT と同様に都市緑化ポテンシャル情報を表示することを想定
         setPopupInfo({
-          title: `${info.object.properties.title} (GeoJSON形式)`,
+          title: `${info.object.properties.title} (GeoJSON 形式)`,
           image: info.object.properties.image,
           description: info.object.properties.description,
           coordinates: [info.coordinate[0], info.coordinate[1]],

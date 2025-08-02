@@ -16,6 +16,7 @@ import * as style from './App.css';
 /**
  * メインアプリケーションコンポーネント
  * 
+ * 都市緑化ポテンシャル可視化システムのプロトタイプ
  * Mapbox と Deck.gl を組み合わせた 3D 地図表示を管理
  * GeoJSON、MVT、.glb 形式のデータ表示を検証
  */
@@ -26,17 +27,17 @@ function App() {
   // 建物クリック時のポップアップ情報を管理（Feature ID による建物データの紐付けを実現）
   const [popupInfo, setPopupInfo] = useState<PopupInfo>(null);
   // 建物データの表示切り替え（配信形式の比較検証用）
-  const [showMvt, setShowMvt] = useState(true);     // MVT形式（差分読み込み）
-  const [showGeoJson, setShowGeoJson] = useState(true);  // GeoJSON形式（一括読み込み）
+  const [showMvt, setShowMvt] = useState(true);     // MVT 形式（差分読み込み）
+  const [showGeoJson, setShowGeoJson] = useState(true);  // GeoJSON 形式（一括読み込み）
 
   // 各種レイヤーを作成（建物データの配信形式比較）
-  const geoJsonBuildingLayer = createGeoJsonBuildingLayer(setPopupInfo);  // GeoJSON形式：小規模データ向け
-  const mvtBuildingLayer = createMvtBuildingLayer(setPopupInfo);      // MVT形式：大規模データ向け
-  // ScenegraphLayer: Blender で作成した .glb 形式の 3D モデル（樹木）の配置
+  const geoJsonBuildingLayer = createGeoJsonBuildingLayer(setPopupInfo);  // GeoJSON 形式：小規模データ向け
+  const mvtBuildingLayer = createMvtBuildingLayer(setPopupInfo);      // MVT 形式：大規模データ向け
+  // ScenegraphLayer: 既存緑化エリアを表現する 3D 樹木モデル (.glb)
   const treeModelLayer = createTreeLayer(setPopupInfo);
 
-  // Mapbox 3D ビルディングレイヤーを追加
-  // Mapbox Standard の建物ベクタータイルを利用して 3D 建物を表示
+  // Mapbox 3D 建物レイヤーを追加
+  // Mapbox Standard の建物ベクタータイルを利用して 3D の建物を表示
   // これにより Feature ID を通じた建物データの紐付けが可能になる
   useEffect(() => {
     const interval = setInterval(() => {
@@ -117,11 +118,11 @@ function App() {
           bottom: '0',
         }}
         layers={[
-          // 建物データ（MVT形式：タイル単位の差分読み込み）
+          // 建物データ（MVT 形式：タイル単位の差分読み込み）
           showMvt ? mvtBuildingLayer : null,
-          // 建物データ（GeoJSON形式：ファイル全体の一括読み込み）
+          // 建物データ（GeoJSON 形式：ファイル全体の一括読み込み）
           showGeoJson ? geoJsonBuildingLayer : null,
-          // ScenegraphLayer: .glb 形式の 3D 樹木モデル
+          // ScenegraphLayer: 既存緑化エリアの 3D 樹木モデル (.glb)
           treeModelLayer,
         ].filter(Boolean)}
       >

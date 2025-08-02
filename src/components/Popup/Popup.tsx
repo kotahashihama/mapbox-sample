@@ -13,7 +13,7 @@ interface PopupProps {
 /**
  * 建物クリック時のポップアップ表示
  * 
- * Feature ID を通じて建物固有の緑化ポテンシャル情報を表示
+ * Feature ID を通じて建物固有の都市緑化ポテンシャル情報を表示
  */
 export function Popup({ popupInfo, getPopupPosition, onClose }: PopupProps) {
   if (!popupInfo) return null;
@@ -31,7 +31,7 @@ export function Popup({ popupInfo, getPopupPosition, onClose }: PopupProps) {
         <img src={popupInfo.image} alt="" className={style.popupImage} />
       )}
       {/* Feature オブジェクトのプロパティを表形式で表示
-          将来的には日射量、耐荷重、適性植物などの情報を表示 */}
+          本実装では日射量、耐荷重、適性植物などの情報を表示することを想定 */}
       {typeof popupInfo.description === 'object' &&
       popupInfo.description !== null ? (
         <table className={style.popupTable}>

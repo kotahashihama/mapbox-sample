@@ -2,7 +2,7 @@
  * GeoJSON 形式の建物データプロパティ
  * 
  * GeoJSON 形式の建物データに付属する情報
- * 将来的には緑化ポテンシャル情報を拡張予定
+ * 本実装では都市緑化ポテンシャル情報を拡張することを想定
  */
 export interface GeoJsonBuildingProperties {
   title: string;
@@ -24,7 +24,7 @@ export interface MVTBuildingProperties {
 /**
  * ポップアップ表示用の情報
  * 
- * 建物クリック時に Feature ID に対応する緑化情報を表示
+ * 建物クリック時に Feature ID に対応する都市緑化ポテンシャル情報を表示
  */
 export type PopupInfo = {
   title: string;
