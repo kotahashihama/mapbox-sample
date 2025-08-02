@@ -118,7 +118,6 @@ function App() {
       />
 
       <Controls
-        viewState={viewState}
         setViewState={setViewState}
         initialViewState={INITIAL_VIEW_STATE}
       />

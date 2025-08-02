@@ -2,7 +2,6 @@ import type { ViewState } from '../../types';
 import * as style from './Controls.css';
 
 interface ControlsProps {
-  viewState: ViewState;
   setViewState: React.Dispatch<React.SetStateAction<ViewState>>;
   initialViewState: ViewState;
 }
