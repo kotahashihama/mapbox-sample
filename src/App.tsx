@@ -11,6 +11,7 @@ import { createTreeLayer } from './layers/treeLayer';
 import { Popup } from './components/Popup/Popup';
 import { Controls } from './components/Controls/Controls';
 import { LayerToggle } from './components/LayerToggle/LayerToggle';
+import * as style from './App.css';
 
 function App() {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
@@ -84,7 +85,7 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+    <div className={style.appContainer}>
       <DeckGL
         initialViewState={viewState}
         controller={true}

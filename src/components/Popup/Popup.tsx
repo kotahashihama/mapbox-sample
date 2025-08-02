@@ -1,12 +1,5 @@
 import type { PopupInfo } from '../../types';
-import {
-  popupStyle,
-  popupTitle,
-  popupImage,
-  popupTable,
-  popupTableKey,
-  popupCloseButton,
-} from './Popup.css';
+import * as style from './Popup.css';
 
 interface PopupProps {
   popupInfo: PopupInfo;
@@ -19,23 +12,23 @@ export function Popup({ popupInfo, getPopupPosition, onClose }: PopupProps) {
 
   return (
     <div
-      className={popupStyle}
+      className={style.popupStyle}
       style={{
         left: getPopupPosition(popupInfo.coordinates).left,
         top: getPopupPosition(popupInfo.coordinates).top,
       }}
     >
-      <div className={popupTitle}>{popupInfo.title}</div>
+      <div className={style.popupTitle}>{popupInfo.title}</div>
       {popupInfo.image && (
-        <img src={popupInfo.image} alt="" className={popupImage} />
+        <img src={popupInfo.image} alt="" className={style.popupImage} />
       )}
       {typeof popupInfo.description === 'object' &&
       popupInfo.description !== null ? (
-        <table className={popupTable}>
+        <table className={style.popupTable}>
           <tbody>
             {Object.entries(popupInfo.description).map(([key, value]) => (
               <tr key={key}>
-                <td className={popupTableKey}>{key}</td>
+                <td className={style.popupTableKey}>{key}</td>
                 <td>{String(value)}</td>
               </tr>
             ))}
@@ -44,7 +37,7 @@ export function Popup({ popupInfo, getPopupPosition, onClose }: PopupProps) {
       ) : (
         <div>{popupInfo.description}</div>
       )}
-      <button className={popupCloseButton} onClick={onClose}>
+      <button className={style.popupCloseButton} onClick={onClose}>
         閉じる
       </button>
     </div>
